@@ -106,7 +106,7 @@ function App() {
             {screen === 'home' && (
               <div className="screen-block home-screen">
                 <div className="elevator-panel">
-                  <div className="panel-display">ВЫБЕРИТЕ ЭТАЖ</div>
+                  <div className="panel-display">ТЕСТ НОВОЙ ПАНЕЛИ 777</div>
 
                   <div className="panel-buttons">
                     {floors.map((floor) => (
@@ -117,7 +117,7 @@ function App() {
                         aria-label={`Этаж ${floor.id}: ${floor.title}`}
                         title={floor.title}
                       >
-                        {floor.id}
+                        F{floor.id}
                       </button>
                     ))}
                   </div>
