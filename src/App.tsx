@@ -29,13 +29,19 @@ function App() {
   const [activeButton, setActiveButton] = useState<string | null>(null);
   const [gateState, setGateState] = useState<GateState>('checking');
 
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const buttonAudioRef = useRef<HTMLAudioElement | null>(null);
+  const elevatorAudioRef = useRef<HTMLAudioElement | null>(null);
+  const dingAudioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
-    audioRef.current = new Audio(
-      'https://actions.google.com/sounds/v1/impacts/mechanical_switch.ogg',
-    );
-    audioRef.current.preload = 'auto';
+    buttonAudioRef.current = new Audio('/button.mp3');
+    buttonAudioRef.current.preload = 'auto';
+
+    elevatorAudioRef.current = new Audio('/elevator.mp3');
+    elevatorAudioRef.current.preload = 'auto';
+
+    dingAudioRef.current = new Audio('/sound.mp3');
+    dingAudioRef.current.preload = 'auto';
   }, []);
 
   useEffect(() => {
@@ -57,17 +63,38 @@ function App() {
     } catch {}
 
     try {
-      if (audioRef.current) {
-        audioRef.current.currentTime = 0;
-        void audioRef.current.play();
+      if (buttonAudioRef.current) {
+        buttonAudioRef.current.currentTime = 0;
+        void buttonAudioRef.current.play();
+      }
+    } catch {}
+  };
+
+  const playDoorCloseSound = () => {
+    try {
+      if (elevatorAudioRef.current) {
+        elevatorAudioRef.current.currentTime = 0;
+        void elevatorAudioRef.current.play();
+      }
+    } catch {}
+  };
+
+  const playDoorOpenSound = () => {
+    try {
+      if (dingAudioRef.current) {
+        dingAudioRef.current.currentTime = 0;
+        void dingAudioRef.current.play();
       }
     } catch {}
   };
 
   const withDoorTransition = (action: () => void, delay = 650) => {
     setDoorsClosed(true);
+    playDoorCloseSound();
+
     window.setTimeout(() => {
       action();
+      playDoorOpenSound();
       setDoorsClosed(false);
     }, delay);
   };
@@ -368,6 +395,82 @@ function App() {
                       <a className="wide-button" href={selectedFloor.musicUrl} target="_blank" rel="noreferrer">
                         Слушать на Яндекс Музыке
                       </a>
+
+                      <button
+                        className={`wide-button secondary ${activeButton === 'back' ? 'is-pressed' : ''}`}
+                        onClick={goHome}
+                      >
+                        Назад
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {screen === 'code' && (
+              <div className="screen-block center-block code-screen">
+                <p className="lead">
+                  Введите кодовое слово, чтобы открыть бонус-трек.
+                </p>
+
+                <label className="code-input-wrap">
+                  <span>Кодовое слово</span>
+
+                  <input
+                    value={word}
+                    onChange={(e) => setWord(e.target.value)}
+                    placeholder="Введите слово"
+                    className="code-input"
+                  />
+                </label>
+
+                <div className="stack gap-md">
+                  <button
+                    className={`wide-button ${activeButton === 'check-word' ? 'is-pressed' : ''}`}
+                    onClick={checkWord}
+                  >
+                    Проверить
+                  </button>
+
+                  <button
+                    className={`wide-button secondary ${activeButton === 'back' ? 'is-pressed' : ''}`}
+                    onClick={goHome}
+                  >
+                    Назад
+                  </button>
+                </div>
+
+                {wordAccepted && (
+                  <div className="result-box success">
+                    <p>Код принят. Допуск открыт.</p>
+
+                    <a className="wide-button" href={bonusLink} target="_blank" rel="noreferrer">
+                      Получить бонус-трек
+                    </a>
+                  </div>
+                )}
+
+                {!wordAccepted && wordError && (
+                  <div className="result-box error">
+                    {wordError}
+                  </div>
+                )}
+              </div>
+            )}
+          </section>
+        </main>
+
+        <footer className="footer-bar">
+          <span>subscription mode</span>
+          <span>{subscribed ? 'доступ открыт' : 'ожидание проверки'}</span>
+        </footer>
+      </div>
+    </div>
+  );
+}
+
+export default App;
 
                       <button
                         className={`wide-button secondary ${activeButton === 'back' ? 'is-pressed' : ''}`}
