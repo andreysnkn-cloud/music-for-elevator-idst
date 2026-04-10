@@ -280,12 +280,15 @@ button {
   display: flex;
   flex-direction: column;
   gap: 18px;
+  align-items: center;
 }
 
 .floor-image {
   width: 100%;
-  aspect-ratio: 4 / 5;
-  object-fit: cover;
+  max-height: 70vh;
+  height: auto;
+  object-fit: contain;
+  object-position: center;
   border-radius: 22px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: #1a1d22;
@@ -440,5 +443,9 @@ button {
 
   .music-btn {
     font-size: 16px;
+  }
+
+  .floor-image {
+    max-height: 62vh;
   }
 }
