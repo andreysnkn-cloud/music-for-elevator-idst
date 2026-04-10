@@ -18,6 +18,10 @@ declare global {
   }
 }
 
+const DOOR_CLOSE_TIME = 650;
+const ELEVATOR_TRAVEL_TIME = 1200;
+const BUTTON_PRESS_DELAY = 250;
+
 function App() {
   const [screen, setScreen] = useState<Screen>('gate');
   const [selectedFloor, setSelectedFloor] = useState<Floor | null>(null);
@@ -28,6 +32,7 @@ function App() {
   const [wordError, setWordError] = useState('');
   const [activeButton, setActiveButton] = useState<string | null>(null);
   const [gateState, setGateState] = useState<GateState>('checking');
+  const [currentIndicatorFloor, setCurrentIndicatorFloor] = useState<number | null>(null);
 
   const buttonAudioRef = useRef<HTMLAudioElement | null>(null);
   const elevatorAudioRef = useRef<HTMLAudioElement | null>(null);
@@ -48,6 +53,12 @@ function App() {
     window.Telegram?.WebApp?.ready?.();
     window.Telegram?.WebApp?.expand?.();
   }, []);
+
+  useEffect(() => {
+    if (selectedFloor) {
+      setCurrentIndicatorFloor(selectedFloor.id);
+    }
+  }, [selectedFloor]);
 
   const title = useMemo(() => {
     if (screen === 'floor' && selectedFloor) return `ЭТАЖ ${selectedFloor.id}`;
@@ -88,21 +99,38 @@ function App() {
     } catch {}
   };
 
-  const withDoorTransition = (action: () => void, delay = 650) => {
-  const travelTime = 1200; // ⏳ время "поездки лифта"
+  const withDoorTransition = (action: () => void, delay = DOOR_CLOSE_TIME) => {
+    setDoorsClosed(true);
+    playDoorCloseSound();
 
-  setDoorsClosed(true);
-  playDoorCloseSound();
+    window.setTimeout(() => {
+      action();
+      playDoorOpenSound();
+      setDoorsClosed(false);
+    }, delay + ELEVATOR_TRAVEL_TIME);
+  };
 
-  // 🚪 ждём пока двери закроются + лифт "едет"
-  window.setTimeout(() => {
-    action();
+  const animateFloorIndicator = (fromFloor: number, toFloor: number) => {
+    const direction = fromFloor <= toFloor ? 1 : -1;
+    const route: number[] = [];
 
-    // 🔔 звук открытия + открытие дверей
-    playDoorOpenSound();
-    setDoorsClosed(false);
-  }, delay + travelTime);
-};
+    for (let floor = fromFloor; direction === 1 ? floor <= toFloor : floor >= toFloor; floor += direction) {
+      route.push(floor);
+    }
+
+    if (route.length === 0) {
+      setCurrentIndicatorFloor(toFloor);
+      return;
+    }
+
+    const stepDuration = Math.max(120, Math.floor(ELEVATOR_TRAVEL_TIME / route.length));
+
+    route.forEach((floorNumber, index) => {
+      window.setTimeout(() => {
+        setCurrentIndicatorFloor(floorNumber);
+      }, index * stepDuration);
+    });
+  };
 
   const verifySubscription = async () => {
     try {
@@ -200,13 +228,23 @@ function App() {
   const openFloor = (floor: Floor) => {
     playButtonFeedback();
     setActiveButton(`floor-${floor.id}`);
+
     window.setTimeout(() => {
-      setActiveButton(null);
-      withDoorTransition(() => {
+      setDoorsClosed(true);
+      playDoorCloseSound();
+
+      const startFloor = currentIndicatorFloor ?? 1;
+      animateFloorIndicator(startFloor, floor.id);
+
+      window.setTimeout(() => {
+        setActiveButton(null);
         setSelectedFloor(floor);
         setScreen('floor');
-      }, 700);
-    }, 250);
+        setCurrentIndicatorFloor(floor.id);
+        playDoorOpenSound();
+        setDoorsClosed(false);
+      }, DOOR_CLOSE_TIME + ELEVATOR_TRAVEL_TIME);
+    }, BUTTON_PRESS_DELAY);
   };
 
   const goHome = () => {
@@ -220,7 +258,7 @@ function App() {
         setWord('');
         setWordAccepted(false);
         setWordError('');
-      });
+      }, 180);
     }, 180);
   };
 
@@ -235,7 +273,7 @@ function App() {
         setWordError('');
         setScreen('code');
       }, 700);
-    }, 250);
+    }, BUTTON_PRESS_DELAY);
   };
 
   const checkWord = () => {
@@ -257,7 +295,7 @@ function App() {
   };
 
   const isIndicatorActive = (id: number) => {
-    return selectedFloor?.id === id || activeButton === `floor-${id}`;
+    return currentIndicatorFloor === id;
   };
 
   return (
