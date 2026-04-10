@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { bonusLink, channelUrl, codeWord, floors, type Floor } from './data/floors';
+import doorLeft from '/door-left.png';
+import doorRight from '/door-right.png';
 
 type Screen = 'gate' | 'home' | 'floor' | 'code';
 type GateState = 'checking' | 'not_subscribed' | 'error';
@@ -324,10 +326,10 @@ function App() {
         <main className="elevator-stage">
           <div className={`doors ${doorsClosed ? 'closed' : 'open'}`} aria-hidden="true">
             <div className="door left">
-              <img src="/door-left.png" alt="" />
+             <img src={doorLeft} alt="" />
             </div>
             <div className="door right">
-              <img src="/door-right.png" alt="" />
+              <img src={doorRight} alt="" />
             </div>
           </div>
 
