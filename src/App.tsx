@@ -36,6 +36,10 @@ function App() {
       // ignore
     }
 
+    const isIndicatorActive = (id: number) => {
+  return selectedFloor?.id === id || activeButton === `floor-${id}`;
+};
+
     try {
       if (audioRef.current) {
         audioRef.current.currentTime = 0;
@@ -126,10 +130,21 @@ function App() {
   return (
     <div className="app-shell">
       <div className="elevator-frame">
-        <header className="display-panel">
-          <div className="brand">idst — Музыка для лифта</div>
-          <div className={`display ${screen === 'home' ? 'display-blink' : ''}`}>{title}</div>
-        </header>
+       <header className="display-panel">
+  <div className="brand">idst — Музыка для лифта</div>
+  <div className={`display ${screen === 'home' ? 'display-blink' : ''}`}>{title}</div>
+
+  <div className="floor-indicator" aria-label="Индикатор этажей">
+    {[1, 2, 3, 4, 5].map((id) => (
+      <span
+        key={id}
+        className={`floor-indicator-item ${isIndicatorActive(id) ? 'active' : ''}`}
+      >
+        {id}
+      </span>
+    ))}
+  </div>
+</header>
 
         <main className="elevator-stage">
           <div className={`doors ${doorsClosed ? 'closed' : 'open'}`} aria-hidden="true">
