@@ -56,8 +56,6 @@ function App() {
     bgMusicRef.current.preload = 'auto';
     bgMusicRef.current.loop = true;
     bgMusicRef.current.volume = 0.35;
-
-    void bgMusicRef.current.play().catch(() => {});
   }, []);
 
   useEffect(() => {
