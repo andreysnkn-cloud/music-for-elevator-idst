@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { bonusLink, channelUrl, codeWord, floors, type Floor } from './data/floors';
+import { dispatcherDialogs } from './data/dispatcher';
 
 type Screen = 'gate' | 'home' | 'floor' | 'code';
 type GateState = 'checking' | 'not_subscribed' | 'error';
@@ -36,11 +37,14 @@ function App() {
   const [lightBeam, setLightBeam] = useState(false);
   const [lightBeamFloor, setLightBeamFloor] = useState<number | null>(null);
   const [isMuted, setIsMuted] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [dialogIndex, setDialogIndex] = useState(0);
 
   const buttonAudioRef = useRef<HTMLAudioElement | null>(null);
   const elevatorAudioRef = useRef<HTMLAudioElement | null>(null);
   const dingAudioRef = useRef<HTMLAudioElement | null>(null);
   const bgMusicRef = useRef<HTMLAudioElement | null>(null);
+  const dispatcherAudioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     buttonAudioRef.current = new Audio('/button.mp3');
@@ -59,16 +63,20 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (bgMusicRef.current) {
-      bgMusicRef.current.volume = 0.35;
+  if (bgMusicRef.current) {
+    bgMusicRef.current.volume = 0.35;
 
-      if (isMuted) {
-        bgMusicRef.current.pause();
-      } else {
-        void bgMusicRef.current.play().catch(() => {});
-      }
+    if (isMuted) {
+      bgMusicRef.current.pause();
+    } else {
+      void bgMusicRef.current.play().catch(() => {});
     }
-  }, [isMuted]);
+  }
+
+  if (dispatcherAudioRef.current) {
+    dispatcherAudioRef.current.muted = isMuted;
+  }
+}, [isMuted]);
 
   useEffect(() => {
     window.Telegram?.WebApp?.ready?.();
@@ -282,8 +290,9 @@ function App() {
   };
 
   const openFloor = (floor: Floor) => {
-    playButtonFeedback();
-    setActiveButton(`floor-${floor.id}`);
+  closeDispatcherDialog();
+  playButtonFeedback();
+  setActiveButton(`floor-${floor.id}`);
 
     window.setTimeout(() => {
       setDoorsClosed(true);
@@ -317,6 +326,7 @@ function App() {
     window.setTimeout(() => {
       setActiveButton(null);
       withDoorTransition(() => {
+        closeDispatcherDialog();
         setSelectedFloor(null);
         setScreen('home');
         setWord('');
@@ -357,6 +367,64 @@ function App() {
       setWordError('Лифт не распознал команду. Попробуйте ещё раз.');
     }, 180);
   };
+
+  const stopDispatcherAudio = () => {
+  try {
+    if (dispatcherAudioRef.current) {
+      dispatcherAudioRef.current.pause();
+      dispatcherAudioRef.current.currentTime = 0;
+    }
+  } catch {}
+};
+
+const playDispatcherLine = (src: string) => {
+  try {
+    stopDispatcherAudio();
+    dispatcherAudioRef.current = new Audio(src);
+
+    if (isMuted) {
+      dispatcherAudioRef.current.muted = true;
+      return;
+    }
+
+    void dispatcherAudioRef.current.play().catch(() => {});
+  } catch {}
+};
+
+const openDispatcherDialog = () => {
+  if (!selectedFloor || selectedFloor.id !== 2) return;
+
+  setDialogIndex(0);
+  setIsDialogOpen(true);
+
+  const firstLine = dispatcherDialogs[2]?.lines[0];
+  if (firstLine) {
+    playDispatcherLine(firstLine.audio);
+  }
+};
+
+const nextDispatcherLine = () => {
+  if (!selectedFloor || selectedFloor.id !== 2) return;
+
+  const dialog = dispatcherDialogs[2];
+  const nextIndex = dialogIndex + 1;
+
+  if (nextIndex < dialog.lines.length) {
+    setDialogIndex(nextIndex);
+    playDispatcherLine(dialog.lines[nextIndex].audio);
+    return;
+  }
+
+  stopDispatcherAudio();
+  setIsDialogOpen(false);
+  setDialogIndex(0);
+};
+
+const closeDispatcherDialog = () => {
+  stopDispatcherAudio();
+  setIsDialogOpen(false);
+  setDialogIndex(0);
+};
 
   const isIndicatorActive = (id: number) => {
     return currentIndicatorFloor === id;
@@ -414,6 +482,27 @@ function App() {
           </div>
 
           {lightBeam && <div className={`light-beam ${lightBeamClass}`} />}
+          {isDialogOpen && selectedFloor?.id === 2 && (
+  <div className="dispatcher-dialog">
+    <img
+      src={dispatcherDialogs[2].portrait}
+      alt="Диспетчер"
+      className="dispatcher-portrait"
+    />
+
+    <div className="dispatcher-panel">
+      <div className="dispatcher-name">Диспетчер</div>
+
+      <div className="dispatcher-text">
+        {dispatcherDialogs[2].lines[dialogIndex].text}
+      </div>
+
+      <button className="dispatcher-next" onClick={nextDispatcherLine}>
+        {dialogIndex === dispatcherDialogs[2].lines.length - 1 ? 'Конец' : 'Далее...'}
+      </button>
+    </div>
+  </div>
+)}
 
           <section className="screen-content">
             {screen === 'gate' && (
@@ -523,7 +612,13 @@ function App() {
 />
 
                   <div className="floor-copy">
-                    <div className="floor-badge">Этаж {selectedFloor.id}</div>
+                    {selectedFloor.id === 2 ? (
+  <button className="floor-badge dispatcher-badge" onClick={openDispatcherDialog}>
+    Диспетчер
+  </button>
+) : (
+  <div className="floor-badge">Этаж {selectedFloor.id}</div>
+)}
                     <h1>{selectedFloor.title}</h1>
                     <p>{selectedFloor.description}</p>
 
