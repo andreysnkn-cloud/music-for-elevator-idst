@@ -392,15 +392,15 @@ const playDispatcherLine = (src: string) => {
 };
 
 const openDispatcherDialog = () => {
-  if (!selectedFloor || selectedFloor.id !== 2) return;
+  if (!selectedFloor) return;
+
+  const dialog = dispatcherDialogs[selectedFloor.id as keyof typeof dispatcherDialogs];
+  if (!dialog || !dialog.lines.length) return;
 
   setDialogIndex(0);
   setIsDialogOpen(true);
 
-  const firstLine = dispatcherDialogs[2]?.lines[0];
-  if (firstLine) {
-    playDispatcherLine(firstLine.audio);
-  }
+  playDispatcherLine(dialog.lines[0].audio);
 };
 
 const nextDispatcherLine = () => {
@@ -416,11 +416,6 @@ const nextDispatcherLine = () => {
     playDispatcherLine(dialog.lines[nextIndex].audio);
     return;
   }
-
-  stopDispatcherAudio();
-  setIsDialogOpen(false);
-  setDialogIndex(0);
-};
 
   stopDispatcherAudio();
   setIsDialogOpen(false);
