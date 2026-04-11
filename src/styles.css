@@ -1035,3 +1035,40 @@ button {
     min-height: 44px;
   }
 }
+.dispatcher-text-typing {
+  overflow: hidden;
+  animation: dispatcherTextFade 0.18s ease-out;
+}
+
+.dispatcher-text-typing::after {
+  content: '';
+  display: inline-block;
+  width: 0.45em;
+  height: 1em;
+  margin-left: 2px;
+  vertical-align: -0.12em;
+  background: rgba(255, 255, 255, 0.75);
+  animation: dispatcherCaretBlink 0.8s step-end infinite;
+}
+
+@keyframes dispatcherTextFade {
+  from {
+    opacity: 0.35;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes dispatcherCaretBlink {
+  0%,
+  50% {
+    opacity: 1;
+  }
+  50.01%,
+  100% {
+    opacity: 0;
+  }
+}
