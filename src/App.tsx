@@ -33,6 +33,7 @@ function App() {
   const [activeButton, setActiveButton] = useState<string | null>(null);
   const [gateState, setGateState] = useState<GateState>('checking');
   const [currentIndicatorFloor, setCurrentIndicatorFloor] = useState<number | null>(null);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   const buttonAudioRef = useRef<HTMLAudioElement | null>(null);
   const elevatorAudioRef = useRef<HTMLAudioElement | null>(null);
@@ -61,12 +62,13 @@ function App() {
   }, [selectedFloor]);
 
   const title = useMemo(() => {
+    if (doorsClosed) return 'Едем...';
     if (screen === 'floor' && selectedFloor) return `ЭТАЖ ${selectedFloor.id}`;
     if (screen === 'code') return 'КОДОВОЕ СЛОВО';
     if (screen === 'home') return 'ВЫБЕРИТЕ ЭТАЖ';
     if (gateState === 'checking') return 'ПРОВЕРКА ПОДПИСКИ';
     return 'ПРОВЕРКА ДОСТУПА';
-  }, [screen, selectedFloor, gateState]);
+  }, [screen, selectedFloor, gateState, doorsClosed]);
 
   const playButtonFeedback = () => {
     try {
@@ -260,23 +262,25 @@ function App() {
   const goHome = () => {
     playButtonFeedback();
     setActiveButton('back');
+    setIsTransitioning(true);
     window.setTimeout(() => {
       setActiveButton(null);
-      withDoorTransition(() => {
-        setSelectedFloor(null);
-        setScreen('home');
-        setWord('');
-        setWordAccepted(false);
-        setWordError('');
-      }, 180);
+      setSelectedFloor(null);
+      setScreen('home');
+      setWord('');
+      setWordAccepted(false);
+      setWordError('');
+      setTimeout(() => setIsTransitioning(false), 800);
     }, 180);
   };
 
   const openCodeScreen = () => {
     playButtonFeedback();
+    setCurrentIndicatorFloor(0);
     setActiveButton('code');
     window.setTimeout(() => {
       setActiveButton(null);
+      animateFloorIndicator(currentIndicatorFloor ?? 1, 0);
       withDoorTransition(() => {
         setWord('');
         setWordAccepted(false);
@@ -304,7 +308,8 @@ function App() {
     }, 180);
   };
 
-  const isIndicatorActive = (id: number) => {
+  const isIndicatorActive = (id: number | string) => {
+    if (screen === 'code') return id === 'K';
     return currentIndicatorFloor === id;
   };
 
@@ -314,14 +319,14 @@ function App() {
         <header className="display-panel">
           {/* <div className="brand">idst — Музыка для лифта</div> */}
           
-          {/* {screen !== 'home' && (
-            <div className={`display`}>
+          
+            <div className={`display ${screen === 'home' ? 'panel-display-blink' : ''}`}>
               {title}
             </div>
-          )} */}
+          
 
           <div className="floor-indicator">
-            {[1, 2, 3, 4, 5].map((id) => (
+            {["K", 1, 2, 3, 4, 5].map((id) => (
               <span
                 key={id}
                 className={`floor-indicator-item ${isIndicatorActive(id) ? 'active' : ''}`}
@@ -332,7 +337,7 @@ function App() {
           </div>
         </header>
 
-        <main className="elevator-stage">
+        <main className={`elevator-stage ${wordError ? 'error-halo' : wordAccepted ? 'success-halo' : ''}`}>
           <div className={`doors ${doorsClosed ? 'closed' : 'open'}`} aria-hidden="true">
             <div className="door left">
              <img src="/door-left.png" alt="" />
@@ -342,7 +347,7 @@ function App() {
             </div>
           </div>
 
-          <section className="screen-content">
+          <section className={`screen-content ${isTransitioning ? 'screen-transition' : ''}`}>
             {screen === 'gate' && (
               <div className="screen-block center-block">
                 {gateState === 'checking' && (
@@ -402,7 +407,8 @@ function App() {
             {screen === 'home' && (
               <div className="screen-block home-screen">
                 <div className="elevator-panel">
-                  <div className={`panel-display panel-display-choice ${screen === 'home' ? 'panel-display-blink' : ''}`}>{title}</div>
+                  <button className={`elevator-btn-disp`}
+                  onClick={openCodeScreen}>вызов диспетчера</button>
 
                   <div className="panel-buttons">
                     {floors.map((floor) => (
