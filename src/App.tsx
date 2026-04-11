@@ -33,14 +33,13 @@ function App() {
   const [activeButton, setActiveButton] = useState<string | null>(null);
   const [gateState, setGateState] = useState<GateState>('checking');
   const [currentIndicatorFloor, setCurrentIndicatorFloor] = useState<number | null>(null);
-
-  // ✅ новый state для луча
   const [lightBeam, setLightBeam] = useState(false);
   const [lightBeamFloor, setLightBeamFloor] = useState<number | null>(null);
 
   const buttonAudioRef = useRef<HTMLAudioElement | null>(null);
   const elevatorAudioRef = useRef<HTMLAudioElement | null>(null);
   const dingAudioRef = useRef<HTMLAudioElement | null>(null);
+  const bgMusicRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     buttonAudioRef.current = new Audio('/button.mp3');
@@ -51,6 +50,13 @@ function App() {
 
     dingAudioRef.current = new Audio('/sound.mp3');
     dingAudioRef.current.preload = 'auto';
+
+    bgMusicRef.current = new Audio('/music.mp3');
+    bgMusicRef.current.preload = 'auto';
+    bgMusicRef.current.loop = true;
+    bgMusicRef.current.volume = 0.35;
+
+    void bgMusicRef.current.play().catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -72,7 +78,17 @@ function App() {
     return 'ПРОВЕРКА ДОСТУПА';
   }, [screen, selectedFloor, gateState]);
 
+  const ensureBackgroundMusic = () => {
+    try {
+      if (bgMusicRef.current && bgMusicRef.current.paused) {
+        void bgMusicRef.current.play().catch(() => {});
+      }
+    } catch {}
+  };
+
   const playButtonFeedback = () => {
+    ensureBackgroundMusic();
+
     try {
       navigator.vibrate?.(35);
     } catch {}
@@ -118,7 +134,11 @@ function App() {
     const direction = fromFloor <= toFloor ? 1 : -1;
     const route: number[] = [];
 
-    for (let floor = fromFloor; direction === 1 ? floor <= toFloor : floor >= toFloor; floor += direction) {
+    for (
+      let floor = fromFloor;
+      direction === 1 ? floor <= toFloor : floor >= toFloor;
+      floor += direction
+    ) {
       route.push(floor);
     }
 
@@ -256,7 +276,6 @@ function App() {
         setScreen('floor');
         setCurrentIndicatorFloor(floor.id);
 
-        // ✅ включаем луч только при открытии этажа
         setLightBeamFloor(floor.id);
         setLightBeam(true);
 
@@ -339,7 +358,7 @@ function App() {
       <div className="elevator-frame">
         <header className="display-panel">
           <div className="brand">idst — Музыка для лифта</div>
-          
+
           <div className={`display ${screen === 'home' ? 'display-blink' : ''}`}>
             {title}
           </div>
@@ -366,7 +385,6 @@ function App() {
             </div>
           </div>
 
-          {/* ✅ луч света только для этажей */}
           {lightBeam && <div className={`light-beam ${lightBeamClass}`} />}
 
           <section className="screen-content">
