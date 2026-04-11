@@ -59,14 +59,14 @@ function App() {
   }, []);
 
   useEffect(() => {
-    const volume = isMuted ? 0 : 1;
-
-    if (buttonAudioRef.current) buttonAudioRef.current.volume = volume;
-    if (elevatorAudioRef.current) elevatorAudioRef.current.volume = volume;
-    if (dingAudioRef.current) dingAudioRef.current.volume = volume;
-
     if (bgMusicRef.current) {
-      bgMusicRef.current.volume = isMuted ? 0 : 0.35;
+      bgMusicRef.current.volume = 0.35;
+
+      if (isMuted) {
+        bgMusicRef.current.pause();
+      } else {
+        void bgMusicRef.current.play().catch(() => {});
+      }
     }
   }, [isMuted]);
 
@@ -96,6 +96,7 @@ function App() {
   const ensureBackgroundMusic = () => {
     try {
       if (!isMuted && bgMusicRef.current && bgMusicRef.current.paused) {
+        bgMusicRef.current.volume = 0.35;
         void bgMusicRef.current.play().catch(() => {});
       }
     } catch {}
@@ -108,6 +109,8 @@ function App() {
       navigator.vibrate?.(35);
     } catch {}
 
+    if (isMuted) return;
+
     try {
       if (buttonAudioRef.current) {
         buttonAudioRef.current.currentTime = 0;
@@ -117,6 +120,8 @@ function App() {
   };
 
   const playDoorCloseSound = () => {
+    if (isMuted) return;
+
     try {
       if (elevatorAudioRef.current) {
         elevatorAudioRef.current.currentTime = 0;
@@ -126,6 +131,8 @@ function App() {
   };
 
   const playDoorOpenSound = () => {
+    if (isMuted) return;
+
     try {
       if (dingAudioRef.current) {
         dingAudioRef.current.currentTime = 0;
