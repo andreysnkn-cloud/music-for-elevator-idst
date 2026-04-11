@@ -35,6 +35,7 @@ function App() {
   const [currentIndicatorFloor, setCurrentIndicatorFloor] = useState<number | null>(null);
   const [lightBeam, setLightBeam] = useState(false);
   const [lightBeamFloor, setLightBeamFloor] = useState<number | null>(null);
+  const [isMuted, setIsMuted] = useState(false);
 
   const buttonAudioRef = useRef<HTMLAudioElement | null>(null);
   const elevatorAudioRef = useRef<HTMLAudioElement | null>(null);
@@ -60,6 +61,18 @@ function App() {
   }, []);
 
   useEffect(() => {
+    const volume = isMuted ? 0 : 1;
+
+    if (buttonAudioRef.current) buttonAudioRef.current.volume = volume;
+    if (elevatorAudioRef.current) elevatorAudioRef.current.volume = volume;
+    if (dingAudioRef.current) dingAudioRef.current.volume = volume;
+
+    if (bgMusicRef.current) {
+      bgMusicRef.current.volume = isMuted ? 0 : 0.35;
+    }
+  }, [isMuted]);
+
+  useEffect(() => {
     window.Telegram?.WebApp?.ready?.();
     window.Telegram?.WebApp?.expand?.();
   }, []);
@@ -78,9 +91,13 @@ function App() {
     return 'ПРОВЕРКА ДОСТУПА';
   }, [screen, selectedFloor, gateState]);
 
+  const toggleMute = () => {
+    setIsMuted((prev) => !prev);
+  };
+
   const ensureBackgroundMusic = () => {
     try {
-      if (bgMusicRef.current && bgMusicRef.current.paused) {
+      if (!isMuted && bgMusicRef.current && bgMusicRef.current.paused) {
         void bgMusicRef.current.play().catch(() => {});
       }
     } catch {}
@@ -355,10 +372,10 @@ function App() {
 
   return (
     <div className="app-shell">
-       <button className="mute-button" onClick={toggleMute}>
-    {isMuted ? '🔇' : '🔊'}
-  </button>
-      
+      <button className="mute-button" onClick={toggleMute} aria-label={isMuted ? 'Включить звук' : 'Выключить звук'}>
+        {isMuted ? '🔇' : '🔊'}
+      </button>
+
       <div className="elevator-frame">
         <header className="display-panel">
           <div className="brand">idst — Музыка для лифта</div>
