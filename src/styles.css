@@ -996,20 +996,23 @@ button {
 }
 
 .dispatcher-next {
-  min-height: 48px;
-  padding: 12px 16px;
+  align-self: flex-end; /* 👈 теперь всегда рядом с текстом */
+
+  padding: 8px 14px;
   border-radius: 999px;
 
-  background: linear-gradient(180deg, #f2c98b 0%, #c5974f 100%);
-  color: #1a1510;
-  font-weight: 800;
-  text-align: center;
+  background: linear-gradient(180deg, #ffcc88 0%, #c48a3a 100%);
+  color: #1a1208;
+  font-weight: 700;
 
-  box-shadow: 0 10px 24px rgba(197, 151, 79, 0.22);
-  transition:
-    transform 0.15s ease,
-    box-shadow 0.15s ease,
-    filter 0.15s ease;
+  border: none;
+  cursor: pointer;
+
+  transition: transform 0.15s ease;
+}
+
+.dispatcher-next:active {
+  transform: scale(0.95);
 }
 
 .dispatcher-next:hover {
