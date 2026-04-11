@@ -355,6 +355,10 @@ function App() {
 
   return (
     <div className="app-shell">
+       <button className="mute-button" onClick={toggleMute}>
+    {isMuted ? '🔇' : '🔊'}
+  </button>
+      
       <div className="elevator-frame">
         <header className="display-panel">
           <div className="brand">idst — Музыка для лифта</div>
