@@ -335,6 +335,13 @@ button {
   border-radius: 22px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: #1a1d22;
+
+  /* ✨ АНИМАЦИЯ */
+  opacity: 0;
+  transform: scale(1.06);
+  filter: blur(6px);
+
+  animation: imageReveal 0.7s ease forwards;
 }
 
 .floor-copy {
@@ -696,5 +703,23 @@ button {
     right: 12px;
     width: 36px;
     height: 36px;
+  }
+}
+@keyframes imageReveal {
+  0% {
+    opacity: 0;
+    transform: scale(1.06);
+    filter: blur(6px);
+  }
+
+  60% {
+    opacity: 1;
+    filter: blur(2px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1);
+    filter: blur(0);
   }
 }
