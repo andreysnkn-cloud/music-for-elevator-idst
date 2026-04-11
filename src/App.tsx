@@ -538,11 +538,7 @@ const closeDispatcherDialog = () => {
   {isTyping && <span className="dispatcher-caret" />}
 </div>
 
-<button
-  className="dispatcher-next"
-  onClick={nextDispatcherLine}
-  disabled={isTyping}
->
+<button className="dispatcher-next" onClick={nextDispatcherLine}>
   {dialogIndex ===
   dispatcherDialogs[selectedFloor.id as keyof typeof dispatcherDialogs].lines.length - 1
     ? 'Конец'
