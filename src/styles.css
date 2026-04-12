@@ -844,14 +844,21 @@ button {
   }
 }
 
-/* === СИСТЕМНАЯ КНОПКА ЗВУКА === */
+/* === СИСТЕМНЫЕ КНОПКИ (звук, ссылка на канал в браузере) === */
 
-.mute-button {
+.shell-floating-actions {
   position: fixed;
   top: 14px;
   right: 14px;
   z-index: 1200;
 
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  gap: 8px;
+}
+
+.mute-button {
   width: 38px;
   height: 38px;
   border-radius: 50%;
@@ -874,6 +881,10 @@ button {
     opacity 0.15s ease;
 
   opacity: 0.82;
+}
+
+a.mute-button {
+  text-decoration: none;
 }
 
 .mute-button:hover {
@@ -899,9 +910,12 @@ button {
 }
 
 @media (max-width: 420px) {
-  .mute-button {
+  .shell-floating-actions {
     top: 12px;
     right: 12px;
+  }
+
+  .mute-button {
     width: 36px;
     height: 36px;
   }

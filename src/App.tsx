@@ -23,8 +23,13 @@ const DOOR_CLOSE_TIME = 500;
 const ELEVATOR_TRAVEL_TIME = 1200;
 const BUTTON_PRESS_DELAY = 250;
 
+/** True when the Mini App runs inside Telegram with signed init data (subscription check possible). */
+function hasTelegramInitData(): boolean {
+  return typeof window !== 'undefined' && Boolean((window.Telegram?.WebApp?.initData ?? '').trim());
+}
+
 function App() {
-  const [screen, setScreen] = useState<Screen>('gate');
+  const [screen, setScreen] = useState<Screen>(() => (hasTelegramInitData() ? 'gate' : 'home'));
   const [selectedFloor, setSelectedFloor] = useState<Floor | null>(null);
   const [subscribed, setSubscribed] = useState(false);
   const [doorsClosed, setDoorsClosed] = useState(false);
@@ -232,6 +237,10 @@ function App() {
       return;
     }
 
+    if (!hasTelegramInitData()) {
+      return;
+    }
+
     try {
       setGateState('checking');
 
@@ -285,7 +294,7 @@ function App() {
 
   useEffect(() => {
     const recheckOnReturn = () => {
-      if (screen === 'gate') {
+      if (screen === 'gate' && hasTelegramInitData()) {
         void verifySubscription();
       }
     };
@@ -481,11 +490,26 @@ const closeDispatcherDialog = () => {
       ? 'beam-floor-5'
       : '';
 
+  const inTelegramMiniApp = hasTelegramInitData();
+
   return (
     <div className="app-shell">
-      <button className="mute-button" onClick={toggleMute} aria-label={isMuted ? 'Включить звук' : 'Выключить звук'}>
-        {isMuted ? '🔇' : '🔊'}
-      </button>
+      <div className="shell-floating-actions" role="toolbar" aria-label="Системные действия">
+        {!inTelegramMiniApp && (
+          <a
+            className="mute-button"
+            href={channelUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Канал idst в Telegram"
+          >
+            <span aria-hidden="true">✈️</span>
+          </a>
+        )}
+        <button className="mute-button" type="button" onClick={toggleMute} aria-label={isMuted ? 'Включить звук' : 'Выключить звук'}>
+          {isMuted ? '🔇' : '🔊'}
+        </button>
+      </div>
 
       <div className="elevator-frame">
         <header className="elevator-header">
