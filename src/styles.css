@@ -77,7 +77,8 @@ button {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: min(100%, min(600px, 90cqi));
+  /* width: min(100%, min(600px, 90cqi)); */
+  width: 100%;
   margin-inline: auto;
   box-sizing: border-box;
   
@@ -86,13 +87,13 @@ button {
   background-size: contain; /* Changed from contain to fill the panel */
   background-repeat: no-repeat;
   
-  margin-top: 12px;
+  /* margin-top: 12px; */
   padding: clamp(8px, 3.8cqi, 16px) clamp(12px, 4.2cqi, 20px);
-  transform: translateY(15px);
+  transform: translateY(8px);
 }
 
 .display {
-  width: min(80%, min(360px, 80cqi));
+  width: min(95%, min(420px, 85cqi));
   border-radius: 16px;
   border-radius: clamp(12px, 3.4cqi, 16px);
   padding: 18px 20px;
@@ -133,18 +134,19 @@ button {
   margin-top: 0px;
   margin-top: 0px;
   /* margin-top: clamp(8px, 2.5cqi, 12px); */
-  margin-bottom: 6px;
+  /* margin-bottom: 6px; */
   margin-inline: auto;
   height: fit-content;
-  width: min(100%, min(600px, 90cqi));
+  /* width: min(100%, min(600px, 90cqi)); */
+  width: 100%;
   padding: 0px 12px;
-  padding: clamp(8px, 2.4cqi, 10px) clamp(10px, 2.8cqi, 12px);
+  padding: clamp(8px, 2.4cqi, 10px) clamp(8px, 2.8cqi, 10px);
   /* border-radius: 18px;
   border-radius: clamp(14px, 3.8cqi, 18px); */
   background-color: #ffffff00;
   background-image: url('/plate.jpg');
   background-position: center center;
-  background-size: contain;
+  background-size: cover;
   background-repeat: no-repeat;
   border: 0px solid rgba(255, 255, 255, 0.08);
   /* box-shadow:
@@ -190,7 +192,7 @@ button {
 .elevator-header {
   background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.80) 100%);
   /* background: url('/public/wall.jpg') no-repeat center center; */
-
+  top: 0;
 }
 
 .elevator-panel {
