@@ -499,6 +499,7 @@ const closeDispatcherDialog = () => {
                 <span
                   key={id}
                   className={`floor-indicator-item ${isIndicatorActive(id) ? 'active' : ''}`}
+                  onClick={() => openFloor(floors.find((f) => f.id === id) as Floor)}
                 >
                   {id}
                 </span>
