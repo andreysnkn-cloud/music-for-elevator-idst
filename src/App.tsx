@@ -290,6 +290,17 @@ function App() {
 
   useEffect(() => {
     void verifySubscription();
+
+    // Fallback: if Telegram takes >5s to load, proceed without it
+    const telegramTimeoutId = window.setTimeout(() => {
+      if (gateState === 'checking' && !subscribed) {
+        setScreen('home');
+        setSubscribed(false);
+        setGateState('error');
+      }
+    }, 5000);
+
+    return () => window.clearTimeout(telegramTimeoutId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
