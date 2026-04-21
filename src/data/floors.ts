@@ -8,7 +8,7 @@ export type Floor = {
 
 export const channelUrl = 'https://t.me/idstband';
 export const bonusLink = 'https://disk.yandex.ru/d/K-ODzQL678bC-Q';
-export const codeWord = 'дзынь';
+export const codeWord = 'дзинь';
 
 export const floors: Floor[] = [
   {
