@@ -101,11 +101,51 @@ function pngToWebpPlugin(): Plugin {
   };
 }
 
+function wwwToApexRedirectPlugin(): Plugin {
+  return {
+    name: 'www-to-apex-redirect',
+    configurePreviewServer(server) {
+      server.middlewares.use((req, res, next) => {
+        const hostHeader = req.headers.host;
+
+        if (!hostHeader) {
+          next();
+          return;
+        }
+
+        const [hostname, port] = hostHeader.split(':');
+        const normalizedHost = hostname.toLowerCase();
+
+        if (!normalizedHost.startsWith('www.') || normalizedHost.length <= 4) {
+          next();
+          return;
+        }
+
+        const targetHost = `${hostname.slice(4)}${port ? `:${port}` : ''}`;
+        const protoHeader = req.headers['x-forwarded-proto'];
+        const proto =
+          typeof protoHeader === 'string' && protoHeader.trim().length > 0
+            ? protoHeader.split(',')[0].trim()
+            : 'https';
+
+        res.statusCode = 301;
+        res.setHeader('Location', `${proto}://${targetHost}${req.url ?? '/'}`);
+        res.end();
+      });
+    }
+  };
+}
+
 export default defineConfig({
-  plugins: [react(), pngToWebpPlugin()],
+  plugins: [react(), pngToWebpPlugin(), wwwToApexRedirectPlugin()],
   preview: {
     host: '0.0.0.0',
     port: 3000,
-    allowedHosts: ['music-for-elevator-xauvlad.amvera.io', '.amvera.io', 'idst-musicforelevator.ru']
+    allowedHosts: [
+      'music-for-elevator-xauvlad.amvera.io',
+      '.amvera.io',
+      'idst-musicforelevator.ru',
+      'www.idst-musicforelevator.ru'
+    ]
   }
 });
